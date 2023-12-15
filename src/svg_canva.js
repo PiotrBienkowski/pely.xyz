@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ControlBar from './control_bar/control_bar';
-import { faUserAstronaut } from '@fortawesome/free-solid-svg-icons';
 
 const SVGCanvas = () => {
     const [isDrawing, setIsDrawing] = useState(false);
@@ -13,7 +12,6 @@ const SVGCanvas = () => {
     const [sizeHeight, setSizeHeight] = useState(10);
     const [sizeWidth, setSizeWidth] = useState(10);
     const [scale, setScale] = useState(1);
-    const [a, setA] = useState(1);
 
     const svgStyle = {
         display: 'block',
@@ -24,24 +22,42 @@ const SVGCanvas = () => {
         maxWidth: '90%',
         maxHeight: '90vh',
         marginTop: '40px',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        touchAction: 'none',
+        userSelect: 'none'
     };
 
-    const startDrawing = ({ clientX, clientY }) => {
+    const handleTouch = (event) => {
+        event.preventDefault();
+        const touch = event.touches[0];
+        return { clientX: touch.clientX, clientY: touch.clientY };
+    };
+
+    const startDrawing = ({ clientX, clientY, touches }) => {
+        if (touches) {
+            clientX = touches[0].clientX;
+            clientY = touches[0].clientY;
+        }
         const rect = svgRef.current.getBoundingClientRect();
         setIsDrawing(true);
         setLines([...lines, { points: [{ x: (clientX - rect.left) * (1 / scale), y: (clientY - rect.top) * (1 / scale) }], color: currentColor, size: currentSize * (1 / scale) }]);
     };
     
-    const draw = ({ clientX, clientY }) => {
+    const draw = (event) => {
         if (!isDrawing) return;
+        const { clientX, clientY } = event.touches ? handleTouch(event) : event;
         const rect = svgRef.current.getBoundingClientRect();
         const newLines = [...lines];
         const points = newLines[newLines.length - 1].points;
-        points.push({ x: (clientX - rect.left)  * (1 / scale), y: (clientY - rect.top) * (1 / scale) });
+        points.push({ x: (clientX - rect.left) * (1 / scale), y: (clientY - rect.top) * (1 / scale) });
         newLines[newLines.length - 1].points = points;
         setLines(newLines);
     };
+
+    const stopDrawing = () => {
+        setIsDrawing(false);
+    };
+
 
     useEffect(() => {
         const handleResize = () => {
@@ -56,9 +72,8 @@ const SVGCanvas = () => {
 
     useEffect(() => {
         const handleKeyDown = (event) => {
-            // Sprawdzenie dla Mac (Cmd + Z) i dla Windows/Linux (Ctrl + Z)
             if ((event.metaKey || event.ctrlKey) && event.key === 'z') {
-                event.preventDefault(); // Zapobieganie domyślnej akcji przeglądarki
+                event.preventDefault();
                 undoLastLine();
             }
         };
@@ -88,16 +103,27 @@ const SVGCanvas = () => {
             setSizeWidth(calcWidth(windowHeight * 0.9));
             setScale(sizeWidth / 1500);
         } 
-    })
+    }, [windowWidth, windowHeight]);
+
+    useEffect(() => {
+        const handleBeforeUnload = (e) => {
+            e.preventDefault();
+            e.returnValue = ''; // Ustawienie returnValue jest wymagane w niektórych przeglądarkach
+            return ''; // Ten tekst nie jest zwykle wyświetlany w nowoczesnych przeglądarkach
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, []);
+
 
     const undoLastLine = () => {
         if (lines.length > 0) {
             setLines(lines.slice(0, -1));
         }
-    };
-
-    const stopDrawing = () => {
-        setIsDrawing(false);
     };
 
     return (
@@ -111,6 +137,9 @@ const SVGCanvas = () => {
                 onMouseMove={draw}
                 onMouseUp={stopDrawing}
                 onMouseLeave={stopDrawing}
+                onTouchStart={startDrawing}
+                onTouchMove={draw}
+                onTouchEnd={stopDrawing}
                 style={svgStyle}
             >
                 {lines.map((line, index) => (
