@@ -1,14 +1,16 @@
 import React from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell, faCog, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 import small from "../assets/icons/small.svg";
 import mid from '../assets/icons/mid.svg';
 import big from '../assets/icons/big.svg';
 import pink from '../assets/icons/pink.svg';
 import orange from '../assets/icons/orange.svg';
 import black from '../assets/icons/black.svg';
+import easer from '../assets/icons/easer.svg';
+import blackPen from '../assets/icons/black_pen.svg';
+import pinkPen from '../assets/icons/pink_pen.svg';
+import orangePen from '../assets/icons/orange_pen.svg';
 
-const ControlBar = ({ setCurrentColor, currentColor, currentSize, setCurrentSize }) => {
+const ControlBar = ({ setCurrentColor, currentColor, currentSize, setCurrentSize, isErasing, toggleEraser, lastColor }) => {
     const style = {
         display: 'flex',
         flexDirection: 'column',
@@ -49,6 +51,16 @@ const ControlBar = ({ setCurrentColor, currentColor, currentSize, setCurrentSize
             <img onClick={() => setCurrentColor('#C031B5')} src={pink} style={getIconStyle('#C031B5')} alt="Pink Icon" />
             <img onClick={() => setCurrentColor('#ff8400')} src={orange} style={getIconStyle('#ff8400')} alt="Orange Icon" />
             <img onClick={() => setCurrentColor('black')} src={black} style={getIconStyle('black')} alt="Black Icon" />
+            {!isErasing ? 
+                <img onClick={() => toggleEraser()} src={easer} style={getIconStyle('')} alt="Black Icon" /> 
+                : 
+                <img 
+                    onClick={() => toggleEraser()} 
+                    src={lastColor === 'black' ? blackPen : (lastColor === '#C031B5' ? pinkPen : orangePen)} 
+                    style={getIconStyle("")} 
+                    alt="Color Icon" 
+                />
+            }
         </div>
     );
 

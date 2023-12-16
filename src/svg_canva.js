@@ -7,6 +7,7 @@ const SVGCanvas = () => {
     const [pages, setPages] = useState([[]]);
     const [activePage, setActivePage] = useState(0);
     const [currentColor, setCurrentColor] = useState('black');
+    const [lastColor, setLastColor] = useState('black');
     const [currentSize, setCurrentSize] = useState(3);
     const svgRefs = useRef(pages.map(() => React.createRef()));
     const [windowHeight, setWindowHeight] = useState(window.innerHeight);
@@ -14,6 +15,8 @@ const SVGCanvas = () => {
     const [sizeHeight, setSizeHeight] = useState(10);
     const [sizeWidth, setSizeWidth] = useState(10);
     const [drawingStartPage, setDrawingStartPage] = useState(null);
+    const [isErasing, setIsErasing] = useState(false);
+    const [isErasingActive, setIsErasingActive] = useState(false);
 
     const svgStyle = {
         display: 'block',
@@ -142,23 +145,113 @@ const SVGCanvas = () => {
         };
     }, []);
 
+    const toggleEraser = () => {
+        if (!isErasing) {
+            setLastColor(currentColor);
+            setCurrentColor("XD");
+        } else {
+            setCurrentColor(lastColor);
+        }
+        setIsErasing(!isErasing);
+        setIsDrawing(false);
+    };
+
+    const handleEraser = (pageIndex) => (event) => {
+        if (!isErasing) return;
+    
+        let { clientX, clientY, touches } = event;
+        if (touches) {
+            clientX = touches[0].clientX;
+            clientY = touches[0].clientY;
+        }
+        const rect = svgRefs.current[pageIndex].current.getBoundingClientRect();
+        const clickX = clientX - rect.left;
+        const clickY = clientY - rect.top;
+    
+        const distanceToLineSegment = (lineStart, lineEnd, point) => {
+            const A = point.x - lineStart.x;
+            const B = point.y - lineStart.y;
+            const C = lineEnd.x - lineStart.x;
+            const D = lineEnd.y - lineStart.y;
+    
+            const dot = A * C + B * D;
+            const lenSq = C * C + D * D;
+            const param = lenSq !== 0 ? dot / lenSq : -1;
+    
+            let xx, yy;
+    
+            if (param < 0) {
+                xx = lineStart.x;
+                yy = lineStart.y;
+            } else if (param > 1) {
+                xx = lineEnd.x;
+                yy = lineEnd.y;
+            } else {
+                xx = lineStart.x + param * C;
+                yy = lineStart.y + param * D;
+            }
+    
+            const dx = point.x - xx;
+            const dy = point.y - yy;
+            return Math.sqrt(dx * dx + dy * dy);
+        };
+    
+        const newPages = [...pages];
+        newPages[pageIndex] = newPages[pageIndex].filter(line => {
+            for (let i = 0; i < line.points.length - 1; i++) {
+                if (distanceToLineSegment(line.points[i], line.points[i + 1], { x: clickX, y: clickY }) < 10 * currentSize * 0.7) {
+                    return false;
+                }
+            }
+            return true;
+        });
+    
+        setPages(newPages);
+    };    
+
+    const startErasing = (pageIndex) => (event) => {
+        if (!isErasing) return;
+        setIsErasingActive(true);
+        handleEraser(pageIndex)(event);
+    };
+    
+    const continueErasing = (pageIndex) => (event) => {
+        if (!isErasingActive) return;
+        handleEraser(pageIndex)(event);
+    };
+    
+    const stopErasing = () => {
+        setIsErasingActive(false);
+    };
+    
+
     return (
         <div>
-            <ControlBar setCurrentColor={setCurrentColor} currentColor={currentColor} currentSize={currentSize} setCurrentSize={setCurrentSize} />
+            <ControlBar
+                setCurrentColor={setCurrentColor}
+                currentColor={currentColor}
+                currentSize={currentSize}
+                setCurrentSize={setCurrentSize}
+                isErasing={isErasing}
+                toggleEraser={toggleEraser}
+                lastColor={lastColor}
+            />
             {pages.map((page, pageIndex) => (
                 <div key={pageIndex} onClick={() => setActivePage(pageIndex)} style={{ cursor: 'pointer' }}>
                     <svg
                         ref={svgRefs.current[pageIndex]}
                         width={sizeWidth}
                         height={sizeHeight}
-                        onMouseDown={handleStartDrawing(pageIndex)}
-                        onMouseMove={handleDrawing(pageIndex)}
-                        onMouseUp={handleStopDrawing}
-                        onMouseLeave={handleStopDrawing}
-                        onTouchStart={handleStartDrawing(pageIndex)}
-                        onTouchMove={handleDrawing(pageIndex)}
-                        onTouchEnd={handleStopDrawing}
+                        onMouseDown={isErasing ? startErasing(pageIndex) : handleStartDrawing(pageIndex)}
+                        onMouseMove={isErasing ? continueErasing(pageIndex) : handleDrawing(pageIndex)}
+                        onMouseUp={isErasing ? stopErasing : handleStopDrawing}
+                        onMouseLeave={isErasing ? stopErasing : handleStopDrawing}
+                        onTouchStart={isErasing ? startErasing(pageIndex) : handleStartDrawing(pageIndex)}
+                        onTouchMove={isErasing ? continueErasing(pageIndex) : handleDrawing(pageIndex)}
+                        onTouchEnd={isErasing ? stopErasing : handleStopDrawing}
+
                         style={svgStyle}
+                        
                     >
                         {page.map((line, lineIndex) => (
                             <polyline
