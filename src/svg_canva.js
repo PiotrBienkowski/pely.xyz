@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import ControlBar from './control_bar/control_bar';
 import AddPage from './control_bar/add_page';
 
@@ -33,27 +33,44 @@ const SVGCanvas = () => {
         userSelect: 'none'
     };
 
-    useEffect(() => {
-        const handleResize = () => {
-            setWindowHeight(window.innerHeight);
+    const handleResize = useCallback(() => {
+        clearTimeout(handleResize.debounce);
+        handleResize.debounce = setTimeout(() => {
             setWindowWidth(window.innerWidth);
-        };
-
-        window.addEventListener('resize', handleResize);
-
-        return () => window.removeEventListener('resize', handleResize);
+            setWindowHeight(window.innerHeight);
+        }, 200);
     }, []);
 
     useEffect(() => {
-        if (calcHeight(windowWidth * 0.9) <= windowHeight * 0.9) {
-            setSizeHeight(calcHeight(windowWidth * 0.9));
-            setSizeWidth(windowWidth * 0.9);
+        window.addEventListener('resize', handleResize);
+
+        return () => {
+            clearTimeout(handleResize.debounce);
+            window.removeEventListener('resize', handleResize);
+        };
+    }, [handleResize]);
+
+    const calculatedHeight = useMemo(() => calcHeight(windowWidth * 0.9), [windowWidth]);
+    const calculatedWidth = useMemo(() => calcWidth(windowHeight * 0.9), [windowHeight]);
+
+    useEffect(() => {
+        let newHeight, newWidth;
+
+        if (calculatedHeight <= windowHeight * 0.9) {
+            newHeight = calculatedHeight;
+            newWidth = windowWidth * 0.9;
         } else {
-            setSizeHeight(windowHeight * 0.9);
-            setSizeWidth(calcWidth(windowHeight * 0.9));
+            newHeight = windowHeight * 0.9;
+            newWidth = calculatedWidth;
         }
+
+        setSizeHeight(newHeight);
+        setSizeWidth(newWidth);
+    }, [windowWidth, windowHeight, calculatedHeight, calculatedWidth]);
+
+    useEffect(() => {
         setScale(sizeWidth / 1500);
-    }, [windowWidth, windowHeight, scale]);
+    }, [sizeWidth]);
 
     const handleStartDrawing = (pageIndex) => (event) => {
         let { clientX, clientY, touches } = event;
@@ -62,54 +79,88 @@ const SVGCanvas = () => {
             clientY = touches[0].clientY;
         }
         const rect = svgRefs.current[pageIndex].current.getBoundingClientRect();
-        
+    
         setIsDrawing(true);
-        const newLines = [...pages[pageIndex], { points: [{ x: (clientX - rect.left) * (1 / scale), y: (clientY - rect.top) * (1 / scale) }], color: currentColor, size: (currentSize) }];
-        const newPages = [...pages];
-        newPages[pageIndex] = newLines;
-        setPages(newPages);
+        const page = pages[pageIndex];
+        
+        page.push({ 
+            points: [{ 
+                x: (clientX - rect.left) * (1 / scale), 
+                y: (clientY - rect.top) * (1 / scale) 
+            }], 
+            color: currentColor, 
+            size: currentSize 
+        });
+    
+        setPages(prevPages => {
+            const newPages = [...prevPages];
+            newPages[pageIndex] = page;
+            return newPages;
+        });
+        
         setDrawingStartPage(pageIndex);
     };
+    
 
     const handleDrawing = (pageIndex) => (event) => {
-        if (pageIndex !== drawingStartPage) {
+        if (pageIndex !== drawingStartPage || !isDrawing) {
             return;
         }
         if (!pages[pageIndex] || pages[pageIndex].length === 0) {
             return;
         }
-        if (!isDrawing) return;
+    
         let { clientX, clientY, touches } = event;
         if (touches) {
             clientX = touches[0].clientX;
             clientY = touches[0].clientY;
         }
         const rect = svgRefs.current[pageIndex].current.getBoundingClientRect();
-        const newPages = [...pages];
-        const points = newPages[pageIndex][newPages[pageIndex].length - 1].points;
-        points.push({ x: (clientX - rect.left) * (1 / scale), y: (clientY - rect.top) * (1 / scale) });
-        newPages[pageIndex][newPages[pageIndex].length - 1].points = points;
-        setPages(newPages);
+    
+        // Aktualizacja stanu za pomocą funkcji callback
+        setPages(prevPages => {
+            // Tworzymy kopię strony, na której odbywa się rysowanie
+            const updatedPage = [...prevPages[pageIndex]];
+    
+            // Dodajemy nowy punkt do ostatniej linii na stronie
+            const lastLineIndex = updatedPage.length - 1;
+            const lastLine = { ...updatedPage[lastLineIndex] };
+            lastLine.points.push({
+                x: (clientX - rect.left) * (1 / scale), 
+                y: (clientY - rect.top) * (1 / scale)
+            });
+            updatedPage[lastLineIndex] = lastLine;
+    
+            // Tworzymy nową tablicę stron z zaktualizowaną stroną
+            const newPages = [...prevPages];
+            newPages[pageIndex] = updatedPage;
+    
+            return newPages;
+        });
     };
+    
 
     const handleStopDrawing = () => {
         setIsDrawing(false);
         setDrawingStartPage(null);
     };
-
+    
     const addPage = () => {
-        setPages([...pages, []]);
+        setPages(prevPages => [...prevPages, []]);
         svgRefs.current = [...svgRefs.current, React.createRef()];
     };
-
-    const undoLastLine = () => {
-        const newPages = [...pages];
-        if (newPages[activePage] && newPages[activePage].length > 0) {
-            newPages[activePage].pop();
-            setPages(newPages);
-        }
-    };
-
+    
+    const undoLastLine = useCallback(() => {
+        setPages(prevPages => {
+            if (prevPages[activePage] && prevPages[activePage].length > 0) {
+                const updatedPage = [...prevPages[activePage]];
+                updatedPage.pop();
+                return [...prevPages.slice(0, activePage), updatedPage, ...prevPages.slice(activePage + 1)];
+            }
+            return prevPages;
+        });
+    }, [activePage, pages]); // zależności
+    
     useEffect(() => {
         const handleKeyDown = (event) => {
             if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
@@ -117,13 +168,13 @@ const SVGCanvas = () => {
                 undoLastLine();
             }
         };
-
+    
         window.addEventListener('keydown', handleKeyDown);
-
+    
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [pages, activePage]);
+    }, [undoLastLine]); // zależność tylko od undoLastLine    
 
     function calcWidth(height) {
         return height * (297 / 210);
@@ -148,16 +199,18 @@ const SVGCanvas = () => {
     }, []);
 
     const funcSetCurrentColor = (color) => {
-        if(isErasing) {
-            toggleEraser();
+        if (isErasing) {
+            setIsErasing(false);
+            setCurrentColor(color);
+        } else {
+            setCurrentColor(color);
         }
-        setCurrentColor(color);
     }
-
+    
     const toggleEraser = () => {
         if (!isErasing) {
             setLastColor(currentColor);
-            setCurrentColor("XD");
+            setCurrentColor("transparent");
         } else {
             setCurrentColor(lastColor);
         }
@@ -165,7 +218,7 @@ const SVGCanvas = () => {
         setIsDrawing(false);
     };
 
-    const handleEraser = (pageIndex) => (event) => {
+    const handleEraser = useCallback((pageIndex) => (event) => {
         if (!isErasing) return;
     
         let { clientX, clientY, touches } = event;
@@ -174,11 +227,26 @@ const SVGCanvas = () => {
             clientY = touches[0].clientY;
         }
         const rect = svgRefs.current[pageIndex].current.getBoundingClientRect();
-        const clickX = (clientX - rect.left) / scale; // Dostosowanie do skali
-        const clickY = (clientY - rect.top) / scale; // Dostosowanie do skali
+        const clickX = (clientX - rect.left) * (1 / scale);
+        const clickY = (clientY - rect.top) * (1 / scale);
     
-        const distanceToLineSegment = (lineStart, lineEnd, point) => {
-            const A = point.x - lineStart.x;
+        setPages(prevPages => {
+            const updatedPages = [...prevPages];
+            updatedPages[pageIndex] = updatedPages[pageIndex].filter(line => {
+                for (let i = 0; i < line.points.length - 1; i++) {
+                    if (distanceToLineSegment(line.points[i], line.points[i + 1], { x: clickX, y: clickY }) < (10 * currentSize * 0.7) * scale) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+    
+            return updatedPages;
+        });
+    }, [isErasing, scale, currentSize]);
+    
+    const distanceToLineSegment = useCallback((lineStart, lineEnd, point) => {
+        const A = point.x - lineStart.x;
             const B = point.y - lineStart.y;
             const C = lineEnd.x - lineStart.x;
             const D = lineEnd.y - lineStart.y;
@@ -203,35 +271,26 @@ const SVGCanvas = () => {
             const dx = point.x - xx;
             const dy = point.y - yy;
             return Math.sqrt(dx * dx + dy * dy);
-        };
+    }, []);
     
-        const newPages = [...pages];
-        newPages[pageIndex] = newPages[pageIndex].filter(line => {
-            for (let i = 0; i < line.points.length - 1; i++) {
-                if (distanceToLineSegment(line.points[i], line.points[i + 1], { x: clickX, y: clickY }) < (10 * currentSize * 0.7) * scale) {
-                    return false;
-                }
-            }
-            return true;
-        });
-    
-        setPages(newPages);
-    };
-    
-    const startErasing = (pageIndex) => (event) => {
+    const handleEraserAction = (pageIndex, event) => {
+        handleEraser(pageIndex)(event);
+    };    
+
+    const startErasing = useCallback((pageIndex) => (event) => {
         if (!isErasing) return;
         setIsErasingActive(true);
-        handleEraser(pageIndex)(event);
-    };
+        handleEraserAction(pageIndex, event);
+    }, [isErasing, handleEraserAction]);
     
-    const continueErasing = (pageIndex) => (event) => {
+    const continueErasing = useCallback((pageIndex) => (event) => {
         if (!isErasingActive) return;
-        handleEraser(pageIndex)(event);
-    };
+        handleEraserAction(pageIndex, event);
+    }, [isErasingActive, handleEraserAction]);
     
-    const stopErasing = () => {
+    const stopErasing = useCallback(() => {
         setIsErasingActive(false);
-    };
+    }, []);
 
     return (
         <div>
@@ -257,7 +316,6 @@ const SVGCanvas = () => {
                         onTouchStart={isErasing ? startErasing(pageIndex) : handleStartDrawing(pageIndex)}
                         onTouchMove={isErasing ? continueErasing(pageIndex) : handleDrawing(pageIndex)}
                         onTouchEnd={isErasing ? stopErasing : handleStopDrawing}
-                        
                         style={svgStyle}
                         
                     >
