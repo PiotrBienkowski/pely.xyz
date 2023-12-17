@@ -2,6 +2,7 @@
   "name": "paint2",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://students.mimuw.edu.pl/~pb458540/tmp/",
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.5.1",
     "@fortawesome/free-solid-svg-icons": "^6.5.1",

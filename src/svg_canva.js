@@ -17,6 +17,7 @@ const SVGCanvas = () => {
     const [drawingStartPage, setDrawingStartPage] = useState(null);
     const [isErasing, setIsErasing] = useState(false);
     const [isErasingActive, setIsErasingActive] = useState(false);
+    const [scale, setScale] = useState(0.5);
 
     const svgStyle = {
         display: 'block',
@@ -51,7 +52,8 @@ const SVGCanvas = () => {
             setSizeHeight(windowHeight * 0.9);
             setSizeWidth(calcWidth(windowHeight * 0.9));
         }
-    }, [windowWidth, windowHeight]);
+        setScale(sizeWidth / 1500);
+    }, [windowWidth, windowHeight, scale]);
 
     const handleStartDrawing = (pageIndex) => (event) => {
         let { clientX, clientY, touches } = event;
@@ -62,7 +64,7 @@ const SVGCanvas = () => {
         const rect = svgRefs.current[pageIndex].current.getBoundingClientRect();
         
         setIsDrawing(true);
-        const newLines = [...pages[pageIndex], { points: [{ x: clientX - rect.left, y: clientY - rect.top }], color: currentColor, size: currentSize }];
+        const newLines = [...pages[pageIndex], { points: [{ x: (clientX - rect.left) * (1 / scale), y: (clientY - rect.top) * (1 / scale) }], color: currentColor, size: (currentSize) }];
         const newPages = [...pages];
         newPages[pageIndex] = newLines;
         setPages(newPages);
@@ -85,7 +87,7 @@ const SVGCanvas = () => {
         const rect = svgRefs.current[pageIndex].current.getBoundingClientRect();
         const newPages = [...pages];
         const points = newPages[pageIndex][newPages[pageIndex].length - 1].points;
-        points.push({ x: clientX - rect.left, y: clientY - rect.top });
+        points.push({ x: (clientX - rect.left) * (1 / scale), y: (clientY - rect.top) * (1 / scale) });
         newPages[pageIndex][newPages[pageIndex].length - 1].points = points;
         setPages(newPages);
     };
@@ -145,6 +147,13 @@ const SVGCanvas = () => {
         };
     }, []);
 
+    const funcSetCurrentColor = (color) => {
+        if(isErasing) {
+            toggleEraser();
+        }
+        setCurrentColor(color);
+    }
+
     const toggleEraser = () => {
         if (!isErasing) {
             setLastColor(currentColor);
@@ -165,8 +174,8 @@ const SVGCanvas = () => {
             clientY = touches[0].clientY;
         }
         const rect = svgRefs.current[pageIndex].current.getBoundingClientRect();
-        const clickX = clientX - rect.left;
-        const clickY = clientY - rect.top;
+        const clickX = (clientX - rect.left) / scale; // Dostosowanie do skali
+        const clickY = (clientY - rect.top) / scale; // Dostosowanie do skali
     
         const distanceToLineSegment = (lineStart, lineEnd, point) => {
             const A = point.x - lineStart.x;
@@ -199,7 +208,7 @@ const SVGCanvas = () => {
         const newPages = [...pages];
         newPages[pageIndex] = newPages[pageIndex].filter(line => {
             for (let i = 0; i < line.points.length - 1; i++) {
-                if (distanceToLineSegment(line.points[i], line.points[i + 1], { x: clickX, y: clickY }) < 10 * currentSize * 0.7) {
+                if (distanceToLineSegment(line.points[i], line.points[i + 1], { x: clickX, y: clickY }) < (10 * currentSize * 0.7) * scale) {
                     return false;
                 }
             }
@@ -207,8 +216,8 @@ const SVGCanvas = () => {
         });
     
         setPages(newPages);
-    };    
-
+    };
+    
     const startErasing = (pageIndex) => (event) => {
         if (!isErasing) return;
         setIsErasingActive(true);
@@ -223,18 +232,17 @@ const SVGCanvas = () => {
     const stopErasing = () => {
         setIsErasingActive(false);
     };
-    
 
     return (
         <div>
             <ControlBar
-                setCurrentColor={setCurrentColor}
                 currentColor={currentColor}
                 currentSize={currentSize}
                 setCurrentSize={setCurrentSize}
                 isErasing={isErasing}
                 toggleEraser={toggleEraser}
                 lastColor={lastColor}
+                funcSetCurrentColor={funcSetCurrentColor}
             />
             {pages.map((page, pageIndex) => (
                 <div key={pageIndex} onClick={() => setActivePage(pageIndex)} style={{ cursor: 'pointer' }}>
@@ -249,16 +257,16 @@ const SVGCanvas = () => {
                         onTouchStart={isErasing ? startErasing(pageIndex) : handleStartDrawing(pageIndex)}
                         onTouchMove={isErasing ? continueErasing(pageIndex) : handleDrawing(pageIndex)}
                         onTouchEnd={isErasing ? stopErasing : handleStopDrawing}
-
+                        
                         style={svgStyle}
                         
                     >
                         {page.map((line, lineIndex) => (
                             <polyline
                                 key={lineIndex}
-                                points={line.points.map(p => `${p.x},${p.y}`).join(' ')}
+                                points={line.points.map(p => `${p.x * scale},${p.y  * scale}`).join(' ')}
                                 stroke={line.color}
-                                strokeWidth={line.size}
+                                strokeWidth={(line.size * scale)}
                                 fill="none"
                                 strokeLinecap="round"
                             />

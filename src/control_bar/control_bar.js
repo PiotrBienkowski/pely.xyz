@@ -10,7 +10,7 @@ import blackPen from '../assets/icons/black_pen.svg';
 import pinkPen from '../assets/icons/pink_pen.svg';
 import orangePen from '../assets/icons/orange_pen.svg';
 
-const ControlBar = ({ setCurrentColor, currentColor, currentSize, setCurrentSize, isErasing, toggleEraser, lastColor }) => {
+const ControlBar = ({ currentColor, currentSize, setCurrentSize, isErasing, toggleEraser, lastColor, funcSetCurrentColor }) => {
     const style = {
         display: 'flex',
         flexDirection: 'column',
@@ -48,9 +48,9 @@ const ControlBar = ({ setCurrentColor, currentColor, currentSize, setCurrentSize
             <img onClick={() => setCurrentSize(1)} src={small} style={getIconStyleSize(1)} alt="Small Icon" />
             <img onClick={() => setCurrentSize(3)} src={mid} style={getIconStyleSize(3)} alt="Mid Icon" />
             <img onClick={() => setCurrentSize(10)} src={big} style={getIconStyleSize(10)} alt="Big Icon" />
-            <img onClick={() => setCurrentColor('#C031B5')} src={pink} style={getIconStyle('#C031B5')} alt="Pink Icon" />
-            <img onClick={() => setCurrentColor('#ff8400')} src={orange} style={getIconStyle('#ff8400')} alt="Orange Icon" />
-            <img onClick={() => setCurrentColor('black')} src={black} style={getIconStyle('black')} alt="Black Icon" />
+            <img onClick={() => funcSetCurrentColor('#C031B5')} src={pink} style={getIconStyle('#C031B5')} alt="Pink Icon" />
+            <img onClick={() => funcSetCurrentColor('#ff8400')} src={orange} style={getIconStyle('#ff8400')} alt="Orange Icon" />
+            <img onClick={() => funcSetCurrentColor('black')} src={black} style={getIconStyle('black')} alt="Black Icon" />
             {!isErasing ? 
                 <img onClick={() => toggleEraser()} src={easer} style={getIconStyle('')} alt="Black Icon" /> 
                 : 
