@@ -9,8 +9,9 @@ import easer from '../assets/icons/easer.svg';
 import blackPen from '../assets/icons/black_pen.svg';
 import pinkPen from '../assets/icons/pink_pen.svg';
 import orangePen from '../assets/icons/orange_pen.svg';
+import download from '../assets/icons/download.svg';
 
-const ControlBar = ({ currentColor, currentSize, setCurrentSize, isErasing, toggleEraser, lastColor, funcSetCurrentColor }) => {
+const ControlBar = ({ currentColor, currentSize, setCurrentSize, isErasing, toggleEraser, lastColor, funcSetCurrentColor, convertSVGToPDF }) => {
     const style = {
         display: 'flex',
         flexDirection: 'column',
@@ -43,16 +44,23 @@ const ControlBar = ({ currentColor, currentSize, setCurrentSize, isErasing, togg
         border: currentSize === size ? '4px solid #55CCFF' : 'none',
     });
 
+    const downloadStyle = {
+        margin: '10px',
+        cursor: 'pointer',
+        width: '20px',
+        height: '20px',
+    }
+
     return (
         <div style={style}>
-            <img onClick={() => setCurrentSize(1)} src={small} style={getIconStyleSize(1)} alt="Small Icon" />
-            <img onClick={() => setCurrentSize(3)} src={mid} style={getIconStyleSize(3)} alt="Mid Icon" />
-            <img onClick={() => setCurrentSize(10)} src={big} style={getIconStyleSize(10)} alt="Big Icon" />
-            <img onClick={() => funcSetCurrentColor('#C031B5')} src={pink} style={getIconStyle('#C031B5')} alt="Pink Icon" />
-            <img onClick={() => funcSetCurrentColor('#ff8400')} src={orange} style={getIconStyle('#ff8400')} alt="Orange Icon" />
-            <img onClick={() => funcSetCurrentColor('black')} src={black} style={getIconStyle('black')} alt="Black Icon" />
+            <img onClick={() => setCurrentSize(1)} src={small} style={getIconStyleSize(1)} />
+            <img onClick={() => setCurrentSize(3)} src={mid} style={getIconStyleSize(3)} />
+            <img onClick={() => setCurrentSize(10)} src={big} style={getIconStyleSize(10)} />
+            <img onClick={() => funcSetCurrentColor('#C031B5')} src={pink} style={getIconStyle('#C031B5')} />
+            <img onClick={() => funcSetCurrentColor('#ff8400')} src={orange} style={getIconStyle('#ff8400')} />
+            <img onClick={() => funcSetCurrentColor('black')} src={black} style={getIconStyle('black')} />
             {!isErasing ? 
-                <img onClick={() => toggleEraser()} src={easer} style={getIconStyle('')} alt="Black Icon" /> 
+                <img onClick={() => toggleEraser()} src={easer} style={getIconStyle('')} /> 
                 : 
                 <img 
                     onClick={() => toggleEraser()} 
@@ -61,6 +69,7 @@ const ControlBar = ({ currentColor, currentSize, setCurrentSize, isErasing, togg
                     alt="Color Icon" 
                 />
             }
+            <img onClick={() => convertSVGToPDF()} src={download} style={downloadStyle} />
         </div>
     );
 

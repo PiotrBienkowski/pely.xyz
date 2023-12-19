@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import ControlBar from './control_bar/control_bar';
 import AddPage from './control_bar/add_page';
+import { convertSVGToPDF } from './utils/svg/SVGtoPDF';
+
 
 const SVGCanvas = () => {
     const [isDrawing, setIsDrawing] = useState(false);
@@ -292,6 +294,10 @@ const SVGCanvas = () => {
         setIsErasingActive(false);
     }, []);
 
+    const handleConvertToPDF = async () => {
+        await convertSVGToPDF(pages, svgRefs, sizeWidth, sizeHeight, scale, setSizeWidth, setSizeHeight, setScale);
+    };
+
     return (
         <div>
             <ControlBar
@@ -302,6 +308,7 @@ const SVGCanvas = () => {
                 toggleEraser={toggleEraser}
                 lastColor={lastColor}
                 funcSetCurrentColor={funcSetCurrentColor}
+                convertSVGToPDF={handleConvertToPDF}
             />
             {pages.map((page, pageIndex) => (
                 <div key={pageIndex} onClick={() => setActivePage(pageIndex)} style={{ cursor: 'pointer' }}>
@@ -327,6 +334,7 @@ const SVGCanvas = () => {
                                 strokeWidth={(line.size * scale)}
                                 fill="none"
                                 strokeLinecap="round"
+                                strokeLinejoin="round"
                             />
                         ))}
                     </svg>
