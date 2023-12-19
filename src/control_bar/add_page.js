@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
 import plus from '../assets/icons/plus.svg';
 
-const AddPage = ({ addPage }) => {
+const AddPage = ({setPages, svgRefs}) => {
     const [isPressed, setIsPressed] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
+
+    const addPage = () => {
+        setPages(prevPages => [...prevPages, []]);
+        svgRefs.current = [...svgRefs.current, React.createRef()];
+    };
 
     const icoStyle = {
         width: isPressed ? '47px' : '50px',
