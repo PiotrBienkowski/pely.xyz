@@ -71,12 +71,25 @@ const SVGCanvas = () => {
                 convertSVGToPDF={handleConvertToPDF}
             />
             {pages.map((page, pageIndex) => (
-                <div key={pageIndex} onClick={() => setActivePage(pageIndex)} style={{ cursor: 'pointer' }}>
+                <div 
+                    key={pageIndex}
+                    onClick={() => {
+                        setActivePage(pageIndex);
+                    }} 
+                    style={{ cursor: 'pointer' }}
+                >
                     <svg
                         ref={svgRefs.current[pageIndex]}
                         width={sizeWidth}
                         height={sizeHeight}
-                        onMouseDown={isErasing ? startErasing(pageIndex) : startDrawing(pageIndex)}
+                        onMouseDown={(event) => {
+                            setActivePage(pageIndex);
+                            if (isErasing) {
+                                startErasing(pageIndex)(event);
+                            } else {
+                                startDrawing(pageIndex)(event);
+                            }
+                        }}
                         onMouseMove={isErasing ? continueErasing(pageIndex) : drawing(pageIndex)}
                         onMouseUp={isErasing ? stopErasing : stopDrawing}
                         onMouseLeave={isErasing ? stopErasing : stopDrawing}
@@ -85,7 +98,7 @@ const SVGCanvas = () => {
                         onTouchEnd={isErasing ? stopErasing : stopDrawing}
                         style={{
                             ...svgStyle,
-                            boxShadow: activePage === pageIndex ? '0 0px 10px #55CCFF' : '0 5px 15px rgba(0,0,0,0.3)',
+                            boxShadow: (sizeWidth > 1000 && pages.length > 1 && activePage === pageIndex) ? '0 0px 10px #55CCFF' : '0 5px 15px rgba(0,0,0,0.3)',
                         }}
                     >
                         {page.map((line, lineIndex) => (

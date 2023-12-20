@@ -17,6 +17,7 @@
     "svg2pdf.js": "^2.2.3",
     "web-vitals": "^2.1.4"
   },
+  "homepage": "https://students.mimuw.edu.pl/~pb458540/pely",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
