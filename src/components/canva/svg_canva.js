@@ -55,7 +55,7 @@ const SVGCanvas = () => {
         marginTop: '20px',
         overflow: 'hidden',
         touchAction: 'none',
-        userSelect: 'none'
+        userSelect: 'none',
     };
 
     return (
@@ -83,8 +83,10 @@ const SVGCanvas = () => {
                         onTouchStart={isErasing ? startErasing(pageIndex) : startDrawing(pageIndex)}
                         onTouchMove={isErasing ? continueErasing(pageIndex) : drawing(pageIndex)}
                         onTouchEnd={isErasing ? stopErasing : stopDrawing}
-                        style={svgStyle}
-                        
+                        style={{
+                            ...svgStyle,
+                            boxShadow: activePage === pageIndex ? '0 0px 10px #55CCFF' : '0 5px 15px rgba(0,0,0,0.3)',
+                        }}
                     >
                         {page.map((line, lineIndex) => (
                             <polyline
