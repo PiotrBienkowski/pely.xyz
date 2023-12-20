@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import plus from '../assets/icons/plus.svg';
+import plus from '../../assets/icons/plus.svg';
 
 const AddPage = ({setPages, svgRefs}) => {
     const [isPressed, setIsPressed] = useState(false);

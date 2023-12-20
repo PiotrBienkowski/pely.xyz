@@ -1,15 +1,15 @@
 import React from 'react';
-import small from "../assets/icons/small.svg";
-import mid from '../assets/icons/mid.svg';
-import big from '../assets/icons/big.svg';
-import pink from '../assets/icons/pink.svg';
-import orange from '../assets/icons/orange.svg';
-import black from '../assets/icons/black.svg';
-import easer from '../assets/icons/easer.svg';
-import blackPen from '../assets/icons/black_pen.svg';
-import pinkPen from '../assets/icons/pink_pen.svg';
-import orangePen from '../assets/icons/orange_pen.svg';
-import download from '../assets/icons/download.svg';
+import small from "../../assets/icons/small.svg";
+import mid from '../../assets/icons/mid.svg';
+import big from '../../assets/icons/big.svg';
+import pink from '../../assets/icons/pink.svg';
+import orange from '../../assets/icons/orange.svg';
+import black from '../../assets/icons/black.svg';
+import easer from '../../assets/icons/easer.svg';
+import blackPen from '../../assets/icons/black_pen.svg';
+import pinkPen from '../../assets/icons/pink_pen.svg';
+import orangePen from '../../assets/icons/orange_pen.svg';
+import download from '../../assets/icons/download.svg';
 
 const ControlBar = ({ currentColor, currentSize, setCurrentSize, isErasing, toggleEraser, lastColor, funcSetCurrentColor, convertSVGToPDF }) => {
     const style = {

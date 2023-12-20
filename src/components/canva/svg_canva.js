@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import ControlBar from './control_bar/control_bar';
-import AddPage from './control_bar/add_page';
-import { convertSVGToPDF } from './utils/svg/SVGtoPDF';
-import { handleStartDrawing, handleDrawing, handleStopDrawing, useSetColor } from './utils/drawing_logic/drawing_logic.js';
-import usePreventPageUnload from './utils/preventReload/PreventPageUnload.js';
-import { usePageSizing } from './utils/pageSizing/pageSizing.js';
-import { useUndo, useKeyboardUndo } from './utils/undo/undoFunctions.js';
-import { useEraser } from './utils/eraser/useEraser.js';
+import ControlBar from '../control_bar/control_bar.js';
+import AddPage from '../control_bar/add_page.js';
+import { convertSVGToPDF } from '../../utils/svg/SVGtoPDF.js';
+import { handleStartDrawing, handleDrawing, handleStopDrawing, useSetColor } from '../../utils/drawing_logic/drawing_logic.js';
+import usePreventPageUnload from '../../utils/preventReload/PreventPageUnload.js';
+import { usePageSizing } from '../../utils/pageSizing/pageSizing.js';
+import { useUndo, useKeyboardUndo } from '../../utils/undo/undoFunctions.js';
+import { useEraser } from '../../utils/eraser/useEraser.js';
 
 const SVGCanvas = () => {
     const [isDrawing, setIsDrawing] = useState(false);
@@ -21,15 +21,15 @@ const SVGCanvas = () => {
     // --- SIZING ---
     const { sizeWidth, sizeHeight, scale, setSizeWidth, setSizeHeight, setScale } = usePageSizing();
 
+    // --- ERASING ---
+    const { isErasing, setIsErasing, startErasing, continueErasing, stopErasing, toggleEraser } = useEraser(pages, setPages, scale, currentSize, svgRefs, setLastColor, currentColor, setCurrentColor, lastColor, setIsDrawing);
+
+
     // --- DRAWING ---
     const startDrawing = handleStartDrawing(pages, setPages, setIsDrawing, setDrawingStartPage, currentColor, currentSize, scale, svgRefs, setDrawingStartPage); 
     const drawing = handleDrawing(pages, setPages, drawingStartPage, isDrawing, scale, svgRefs);
     const stopDrawing = handleStopDrawing(setIsDrawing, setDrawingStartPage);
     const funcSetCurrentColor = useSetColor(isErasing, setIsErasing, setCurrentColor);
-
-
-    // --- ERASING ---
-    const { isErasing, setIsErasing, startErasing, continueErasing, stopErasing, toggleEraser } = useEraser(pages, setPages, scale, currentSize, svgRefs, setLastColor, currentColor, setCurrentColor, lastColor, setIsDrawing);
 
     // --- SVG ---
     const handleConvertToPDF = async () => {
@@ -46,6 +46,7 @@ const SVGCanvas = () => {
     const svgStyle = {
         display: 'block',
         margin: 'auto',
+        marginTop: '160px',
         borderRadius: '15px',
         boxShadow: '0 5px 15px rgba(0,0,0,0.3)',
         backgroundColor: '#fff',
