@@ -35,8 +35,11 @@ export const usePageSizing = () => {
             newHeight = windowHeight * 0.9;
             newWidth = calculatedWidth;
         }
-        setSizeHeight(newHeight);
-        setSizeWidth(newWidth);
+        
+        if (!(newHeight > sizeHeight && newHeight < sizeHeight * 1.1 )) {
+            setSizeHeight(newHeight);
+            setSizeWidth(newWidth);
+        }
     }, [windowWidth, windowHeight, calculatedHeight, calculatedWidth]);
 
     useEffect(() => {
