@@ -1,8 +1,27 @@
-# Getting Started with Create React App
+# Pley.xyz - just a few sheets of paper
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+[Pely.xyz](https://www.pely.xyz/)
 
-## Available Scripts
+## Idea 
+The idea when creating the solution was to create a minimalist vector drawing program woring in web browser (soon as an application for tablet and computer) 
+
+## Preview
+![Group 470 (1)](https://github.com/PiotrBienkowski/pely/assets/120416913/15ee14cf-8c8e-488e-bcc4-8eb21530e446)
+
+## Features
+### - page size
+The proportions of the drawing sheet are fixed - it is a4, which allows you to easily print notes.
+### - drawing
+Simple vector drawing in 3 colors and 3 pen sizes.
+### - erasing
+Simple erasing in 3 eraser sizes.
+### - undo 
+cmd + z (control + z) shortcuts work on the board. Each card has its own change history - undo works separately for each card.
+### - download 
+a PDF file is returned, vector graphics ensure no loss of quality regardless of the resolution of the user's monitor. 
+
+
+## Available React Scripts
 
 In the project directory, you can run:
 
@@ -14,11 +33,6 @@ Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 The page will reload when you make changes.\
 You may also see any lint errors in the console.
 
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
 ### `npm run build`
 
 Builds the app for production to the `build` folder.\
@@ -29,42 +43,3 @@ Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)

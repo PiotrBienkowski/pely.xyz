@@ -35,8 +35,8 @@ export const usePageSizing = () => {
             newHeight = windowHeight * 0.9;
             newWidth = calculatedWidth;
         }
-        
-        if (!(newHeight > sizeHeight && newHeight < sizeHeight * 1.1 )) {
+
+        if (!(newHeight > sizeHeight && newHeight < sizeHeight * 1.5)) {
             setSizeHeight(newHeight);
             setSizeWidth(newWidth);
         }
