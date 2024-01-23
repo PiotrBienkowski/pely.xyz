@@ -112,6 +112,9 @@ const SVGCanvas = () => {
                                 strokeLinejoin="round"
                             />
                         ))}
+                        <text x="10" y="20" fill="black" fontSize="15" fontFamily="Arial">
+                            test
+                        </text>
                     </svg>
                 </div>
             ))}
